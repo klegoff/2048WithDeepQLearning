@@ -1,6 +1,11 @@
-from keras.models import Sequential
-from keras.layers import Dense, Activation, Flatten
-from keras.optimizer import Adam
+# -*- coding: utf-8 -*-
+"""
+Contains RL agent
+"""
+
+#from keras.models import Sequential
+#from keras.layers import Dense, Activation, Flatten
+#from keras.optimizer import Adam
 
 class agent:
 	"""

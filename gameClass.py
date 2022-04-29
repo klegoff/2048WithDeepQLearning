@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-Main script of the project
-Contains environment & agent classes
+Contains 2048 implementation as an interactive envrionment
 """
-import numpy as np
 from copy import deepcopy
-
+import numpy as np
 
 def updateGrid(grid_, action,transposed = False):
 	"""
@@ -72,8 +70,8 @@ def updateGrid(grid_, action,transposed = False):
 
 class gameEnvironment:
 	"""
-	Class for the 2048 grid
-	contains all we need to interact with it
+	Class for the 2048 game
+	Includes random initialisation of grid, and step function to execute action in the environment
 	"""
 	def __init__(self):
 		# empty grid
@@ -87,15 +85,31 @@ class gameEnvironment:
 	def step(self, action):
 		"""
 		makes the step according to the chosen action
+		:input:
+			action (type=str), from list of actions ["down", "left", "right", "up"]
+		:outputs:
+			reward (type = int), reward of the action
+			new_grid (type = np.array), new grid of the game state
 		"""
-		self.grid = updateGrid(self.grid, action)
-		reward = -1
-		state = self.grid
-		return reward, state
+		old_grid = deepcopy(self.grid)
+		# compute new grid, from the previous grid and the action choosen
+		new_grid = updateGrid(old_grid, action)
+		self.grid = new_grid
+		reward = computeReward(old_grid, new_grid)
+		return reward, new_grid
 
-if __name__ == '__main__':
+def computeReward(old_grid, new_grid):
+	"""
+	Computes the reward from one state to another
+	:inputs:
+		old_grid, new_grid (type=np.array), state of the game before and after an action
+	:output:
+		reward (type=int), reward of the state evolution
+	"""
+	# count number of new empty cells (==0)
+	reward0 = len(np.where(new_grid==0)[0]) - len(np.where(old_grid==0)[0])
 
-	grid = np.random.randint(2,size=(4,4))
-	print(grid)
-	grid = updateGrid(grid, "up")
-	print(grid)
+	# difference of highest value
+	reward1 = 5 * (new_grid.max() - old_grid.max())
+
+	return reward0 + reward1
