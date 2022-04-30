@@ -28,7 +28,7 @@ def computeReward(old_grid, new_grid):
 	reward0 = len(np.where(new_grid==0)[0]) - len(np.where(old_grid==0)[0])
 
 	# difference of highest value
-	reward1 = 5 * (new_grid.max() - old_grid.max())
+	reward1 = (new_grid.max() - old_grid.max()) ** 2
 
 	return reward0 + reward1
 
@@ -76,10 +76,16 @@ class agentClass:
 		self.state = deepcopy(self.env.grid)
 
 
-	def interact(action):
-		pass
+	def interact(self, action):
+		"""
+		execute action in the environment, return the reward
+		"""
+		old_grid = self.env.grid
+		self.env.step(action)
+		new_grid = self.env.grid
+		reward = computeReward(old_grid, new_grid)
 
-	#reward = computeReward(old_grid, new_grid)
+		return reward
 
 	def choose_action(self, policy_model):
 		"""
@@ -95,3 +101,9 @@ class agentClass:
 			tensor = self.grid 
 			output_tensor = policy_model.forward(output_tensor)
 			return action[np.argmax(output_tensor.detach().numpy())] 
+
+	def resetGameEnv(self):
+		self.env = gameEnvironmentClass()
+
+
+
