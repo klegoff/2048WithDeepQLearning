@@ -87,29 +87,8 @@ class gameEnvironment:
 		makes the step according to the chosen action
 		:input:
 			action (type=str), from list of actions ["down", "left", "right", "up"]
-		:outputs:
-			reward (type = int), reward of the action
-			new_grid (type = np.array), new grid of the game state
 		"""
-		old_grid = deepcopy(self.grid)
 		# compute new grid, from the previous grid and the action choosen
-		new_grid = updateGrid(old_grid, action)
+		new_grid = updateGrid(self.grid, action)
 		self.grid = new_grid
-		reward = computeReward(old_grid, new_grid)
-		return reward, new_grid
 
-def computeReward(old_grid, new_grid):
-	"""
-	Computes the reward from one state to another
-	:inputs:
-		old_grid, new_grid (type=np.array), state of the game before and after an action
-	:output:
-		reward (type=int), reward of the state evolution
-	"""
-	# count number of new empty cells (==0)
-	reward0 = len(np.where(new_grid==0)[0]) - len(np.where(old_grid==0)[0])
-
-	# difference of highest value
-	reward1 = 5 * (new_grid.max() - old_grid.max())
-
-	return reward0 + reward1
