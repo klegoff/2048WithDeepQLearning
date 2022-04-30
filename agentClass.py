@@ -2,19 +2,18 @@
 """
 Contains RL agent class and NN
 """
-
-#from keras.models import Sequential
-#from keras.layers import Dense, Activation, Flatten
-#from keras.optimizer import Adam
 import random
+from copy import deepcopy
 from collections import deque, namedtuple
 import numpy as np
 
 from gameClass import gameEnvironment
+from dqnClass import DQN
 
 #######################
 #
-#
+# Functions relating 
+# to environment
 #
 #######################
 
@@ -63,45 +62,59 @@ class replayMemory(object):
 	"""
 	class to store all transition
 	"""
-    def __init__(self, capacity):
-        self.memory = deque([],maxlen=capacity)
+	def __init__(self, capacity):
+		self.memory = deque([],maxlen=capacity)
 
-    def push(self, *args):
-        """Save a transition"""
-        self.memory.append(Transition(*args))
+	def push(self, *args):
+		"""Save a transition"""
+		self.memory.append(Transition(*args))
 
-    def sample(self, batch_size):
-        return random.sample(self.memory, batch_size)
+	def sample(self, batch_size):
+		return random.sample(self.memory, batch_size)
 
-    def __len__(self):
-        return len(self.memory)
+	def __len__(self):
+		return len(self.memory)
 
 class agent:
 	"""
 	deep q learning agent
 	contains the neural network for reward computation
 	"""
-	def __init__(self, epsilon, env, gamma, alpha,initial_state=None):
+	def __init__(self, epsilon, gamma, alpha,initial_env=None):
+		# possible actions
 		self.actions = ['left', 'right', 'down', 'up']
-		self.epsilon = epsilon
-		self.state = copy.deepcopy(env.start)
+
+		# hyperparameters
 		self.gamma = gamma
 		self.alpha = alpha
+		self.epsilon = epsilon
+
+		# generate env if None as input
+		if type(initial_env) == type(None):
+			self.env = gameEnvironment()
+		else:
+			self.env = deepcopy(initial_env)
+
+		# store initial state
+		self.state = deepcopy(self.env.grid)
 
 
-	def interact(action)
+	def interact(action):
+		pass
+
 	#reward = computeReward(old_grid, new_grid)
 
-"""
-class DQN(nn.Module):
+	def choose_action(self):
+		"""
+		choose the action
+		randomly or the one the maximise q
+		"""
+		if random.random() < self.epsilon:
+			# random action (exploration)
+			return random.choice(self.actions)
 
-    def __init__(self):
-        super(self).__init__()
-        
-
-
-    # Called with either one element to determine next action, or a batch
-    # during optimization. Returns tensor([[left0exp,right0exp]...]).
-    def forward(self, x):
-    	pass
-"""
+		else:
+			# get action with highest q value
+			tensor = self.grid 
+			output_tensor = self.policy_dqn.forward(output_tensor)
+			return action[np.argmax(output_tensor.detach().numpy())] 
