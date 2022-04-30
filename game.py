@@ -68,7 +68,7 @@ def updateGrid(grid_, action,transposed = False):
 		return updateGrid(grid, action, transposed)
 
 
-class gameEnvironment:
+class gameEnvironmentClass:
 	"""
 	Class for the 2048 game
 	Includes random initialisation of grid, and step function to execute action in the environment
