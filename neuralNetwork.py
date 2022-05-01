@@ -3,6 +3,7 @@
 Contains deep q-learning network class
 and related functions
 """
+import random
 from collections import deque, namedtuple
 
 import torch
@@ -59,6 +60,10 @@ class replayMemory(object):
 
 	def __len__(self):
 		return len(self.memory)
+
+	def reset(self):
+		self.memory = deque([],maxlen=capacity)
+
 
 
 

@@ -67,6 +67,24 @@ def updateGrid(grid_, action,transposed = False):
 			grid = np.flip(grid,1)
 		return updateGrid(grid, action, transposed)
 
+def gridIsFinished(grid):
+	"""
+	return True if grid is finished, False otherwise
+	"""
+	len_ = grid.shape[0]
+	# if one cell is empty, return False
+	if len(np.where(grid==0)[0]) > 0:
+		return False
+
+	# if two cells aligned share the same value, return False
+	else:
+		for i in range(len_):
+			for row in [grid[i], grid[:,i]]:
+				# remove zeros, since they reprensent empty cells
+				row = row[np.where(row != 0)]
+				if (row[1:] == row[:-1]).sum == 1:
+					return False
+		return True
 
 class gameEnvironmentClass:
 	"""
@@ -91,4 +109,3 @@ class gameEnvironmentClass:
 		# compute new grid, from the previous grid and the action choosen
 		new_grid = updateGrid(self.grid, action)
 		self.grid = new_grid
-

@@ -32,20 +32,6 @@ def computeReward(old_grid, new_grid):
 
 	return reward0 + reward1
 
-def gameContinues(grid):
-	"""
-	check if the grid is still playable or not
-	:input:
-		grid (type=np.array), state of the game
-	:output:
-		(type = bool), True if grid is still playble, False otherwise
-	"""
-	zeroCount = len(np.where(grid==0)[0])
-	if zeroCount == 0:
-		return False
-	else :
-		return True
-
 #######################
 #
 # Agent class
