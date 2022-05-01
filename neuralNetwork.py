@@ -40,7 +40,7 @@ def processGrid(grid):
 #######################
 
 Transition = namedtuple('Transition',
-                        ('state', 'action', 'next_state', 'reward'))
+                        ('state', 'action', 'new_state', 'reward'))
 
 
 class replayMemory(object):
