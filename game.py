@@ -5,6 +5,18 @@ Contains 2048 implementation as an interactive envrionment
 from copy import deepcopy
 import numpy as np
 
+
+def updateGridTryWrapper(grid_, action):
+	"""
+	calls updateGrid function
+	if an error occurs, grid is unchanged
+	"""
+	try:
+		return updateGrid(grid_, action)
+	except:
+		# Moove doesnt change the grid
+		return grid_
+
 def updateGrid(grid_, action,transposed = False):
 	"""
 	Makes the move of the grid and generate randomly a new number (2 or 4) in an empty case
@@ -82,7 +94,7 @@ def gridIsFinished(grid):
 			for row in [grid[i], grid[:,i]]:
 				# remove zeros, since they reprensent empty cells
 				row = row[np.where(row != 0)]
-				if (row[1:] == row[:-1]).sum == 1:
+				if (row[1:] == row[:-1]).sum() > 0:
 					return False
 		return True
 
@@ -107,5 +119,5 @@ class gameEnvironmentClass:
 			action (type=str), from list of actions ["down", "left", "right", "up"]
 		"""
 		# compute new grid, from the previous grid and the action choosen
-		new_grid = updateGrid(self.grid, action)
+		new_grid = updateGridTryWrapper(self.grid, action)
 		self.grid = new_grid

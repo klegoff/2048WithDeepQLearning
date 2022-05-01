@@ -20,7 +20,7 @@ def fillExperienceMemory(agent, memory, policy_model):
 	# fill memory from agent experiences
 	while len(memory) < memory.capacity: 
 		# if game is finished, we reset the grid
-		if not gameContinues(agent.env.grid):
+		if gridIsFinished(agent.env.grid):
 			agent.resetGameEnv() 
 		state = agent.env.grid
 		action = agent.choose_action(policy_model)
@@ -42,11 +42,15 @@ if __name__=="__main__":
 
 	# instantiate agent
 	agent = agentClass(epsilon, gamma, alpha)
+	
+	for i in range(100):
+		agent.interact("down")
+		print(agent.env.grid)
+		print(gridIsFinished(agent.env.grid))
 
-	#print(gridIsFinished(agent.env.grid))
-
+	"""
 	# fill memory with agent experiences
-	fillExperience(agent, memory, policy_model)
+	fillExperienceMemory(agent, memory, policy_model)
 
 	# retrive states
 	transitions = memory.sample(memorySize)
@@ -55,3 +59,5 @@ if __name__=="__main__":
 	
 	# how to deal with impossible actions ? try/except on "interact"
 	# how we propagate error on q-values ? 
+	"""
+
