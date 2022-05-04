@@ -4,6 +4,7 @@ Contains deep q-learning network class
 and related functions
 """
 import random
+import numpy as np
 from collections import deque, namedtuple
 
 import torch
@@ -30,7 +31,10 @@ def processGrid(grid):
 	"""
 	format grid, as input of DQN
 	"""
-	return torch.tensor(grid).float().reshape(1,-1)
+	stateArray = np.stack(grid).reshape(1, -1)
+	stateTensor =  torch.tensor(stateArray).float()
+	return stateTensor
+	#return torch.tensor(grid).float().reshape(1,-1)
 
 #######################
 #

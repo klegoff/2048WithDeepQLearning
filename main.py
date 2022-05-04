@@ -25,34 +25,35 @@ def fillExperienceMemory(agent, memory, policy_model):
 
 		# agent choose action, and interct with environment
 		state = agent.env.grid
-		action = agent.choose_action(policy_model)
+		with torch.no_grad():
+			action = agent.choose_action(policy_model)
 		reward = agent.interact(action)
 		new_state = agent.env.grid
 
 		# fill memory from agent experience
 		memory.push(state, action, new_state, reward)
 
-def getError(memory, policy_model, gamma):
+def getError(memory, sampleSize, policy_model, gamma):
 	"""
-	memory -> error
+	memory sample -> data format -> error value
 	& format to pass as model input
 	"""
 	actions = ["down", "left", "right", "up"]
 	memorySize = memory.capacity
 
 	# retrive states
-	transitions = memory.sample(memorySize)
+	transitions = memory.sample(sampleSize)
 	batch = Transition(*zip(*transitions))
 
 	# coordinates of experienced (state, action)
 	actionList = batch.action
 	func = lambda x: actions.index(x)
 	actionList = list(map(func, actionList))
-	actionCoordinate = tuple(range(memorySize)), tuple(actionList) # index of the value for Q(s,a)
+	actionCoordinate = tuple(range(sampleSize)), tuple(actionList) # index of the value for Q(s,a)
 
 	# format
-	stateArray = np.stack(batch.state).reshape(memorySize, -1)
-	newStateArray = np.stack(batch.new_state).reshape(memorySize, -1)
+	stateArray = np.stack(batch.state).reshape(sampleSize, -1)
+	newStateArray = np.stack(batch.new_state).reshape(sampleSize, -1)
 	rewardArray = np.stack(batch.reward)
 
 	# cast to torch type
@@ -63,39 +64,37 @@ def getError(memory, policy_model, gamma):
 	# Bell formula for error, using neural network approximation of Q function
 	# error for actions that are not used in the experience, is set to 0
 	# error = Q(s, a) - ( R(s,a) + gamma * max(Q(s',a)) )
-	error = torch.zeros((memorySize, len(actions)))
+	error = torch.zeros((sampleSize, len(actions)))
 	error[actionCoordinate] = policy_model.forward(stateTensor)[actionCoordinate] - rewardTensor + gamma * policy_model.forward(newStateTensor).max(dim=1).values
-	return error
+	return -error
 
 if __name__=="__main__":
 	# hyperparameters
-	epsilon, gamma, alpha = 1, 1, 1
-	batch_size = 500
-	epoch = 10
+	epsilon, gamma = 0.4, 0.9 # epsilon = ration exploration / exploitation, gamma = relative importance of future reward
+	samplesize = 300
+	memorySize = 3000
+	epoch = 20
 
-	# instantiate policy model
+	# instantiate objects
 	policy_model = policyNetworkClass()
 	optimizer = optim.RMSprop(policy_model.parameters())
-	criterion = nn.SmoothL1Loss()
+	agent = agentClass(epsilon, gamma)
 
 	for e in range(epoch):
 		print("epoch",e)
-		# instantiate memory replay object
-		memorySize = batch_size
-		memory = replayMemory(memorySize)
 
-		# instantiate agent
-		agent = agentClass(epsilon, gamma, alpha)
+		# instantiate memory replay object
+		memory = replayMemory(memorySize)
 		
 		# fill memory with agent experiences
 		fillExperienceMemory(agent, memory, policy_model)
 
-		# experiences to loss values
-		error = getError(memory, policy_model, gamma)
+		# from a sample of experiences, we compute the error
+		error = getError(memory, samplesize, policy_model, gamma)
 		loss = error.sum() # sum of errors, on batch
+		print(loss)
 
 		# propagate error & update weights
 		optimizer.zero_grad()
 		loss.backward()
 		optimizer.step()
-		print("loss",loss)

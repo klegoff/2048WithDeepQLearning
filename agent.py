@@ -7,7 +7,7 @@ from copy import deepcopy
 import numpy as np
 
 from game import gameEnvironmentClass
-from neuralNetwork import policyNetworkClass
+from neuralNetwork import processGrid
 
 #######################
 #
@@ -43,13 +43,12 @@ class agentClass:
 	deep q learning agent
 	contains the neural network for reward computation
 	"""
-	def __init__(self, epsilon, gamma, alpha,initial_env=None):
+	def __init__(self, epsilon, gamma, initial_env=None):
 		# possible actions
 		self.actions = ['left', 'right', 'down', 'up']
 
 		# hyperparameters
 		self.gamma = gamma
-		self.alpha = alpha
 		self.epsilon = epsilon
 
 		# generate env if None as input
@@ -84,9 +83,10 @@ class agentClass:
 
 		else:
 			# get action with highest q value
-			tensor = self.grid 
-			output_tensor = policy_model.forward(output_tensor)
-			return action[np.argmax(output_tensor.detach().numpy())] 
+			grid = self.env.grid 
+			tensor = processGrid(grid)
+			output_tensor = policy_model.forward(tensor)
+			return self.actions[np.argmax(output_tensor.detach().numpy())] 
 
 	def resetGameEnv(self):
 		self.env = gameEnvironmentClass()
