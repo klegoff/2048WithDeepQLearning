@@ -3,12 +3,12 @@
 main script :
 learn optimal policy model
 """
+import pickle
 import torch.optim as optim
 
 from game import *
 from neuralNetwork import *
 from agent import *
-from main import * 
 
 def fillExperienceMemory(agent, memory, policy_model):
 	"""
@@ -78,7 +78,7 @@ if __name__=="__main__":
 	epsilon, gamma = 0.4, 0.95 # epsilon = ration exploration / exploitation, gamma = relative importance of future reward
 	sampleSize = 500
 	memorySize = 2000
-	epoch = 2
+	epoch = 100
 
 	# instantiate objects
 	policy_model = policyNetworkClass()
@@ -86,8 +86,11 @@ if __name__=="__main__":
 	agent = agentClass(epsilon, gamma)
 	criterion = nn.MSELoss()
 
+	# some object for post-training analysis
+	lossDict = {}
+	modelWeightsDict = {}
+
 	for e in range(epoch):
-		
 
 		# instantiate memory replay object
 		memory = replayMemory(memorySize)
@@ -97,13 +100,20 @@ if __name__=="__main__":
 
 		# from a sample of experiences, we compute the error
 		loss = computeLoss(memory, sampleSize, policy_model,criterion, gamma)
-		print("epoch",e,"Loss=",loss.detach().numpy())
+		lossDict[e] = loss.detach().numpy()[()]
+		print("epoch",e,"Loss=",lossDict[e])
 
 		# propagate error & update weights
 		optimizer.zero_grad()
 		loss.backward()
 		optimizer.step()
 
-		# save model state
-		modelPath = "model/modelWeights" + str(e) + ".torch"
-		torch.save(policy_model.state_dict(), modelPath)
+		# add new model_state to dict
+		modelWeightsDict[e] = policy_model.state_dict()
+
+	# save model state and training loss
+	modelPath = "model/"
+	with open(modelPath + "modelWeightsDict.pickle", "wb") as f:
+		pickle.dump(modelWeightsDict, f)
+	with open(modelPath + "/lossDict.pickle", "wb") as f:
+		pickle.dump(lossDict, f)
