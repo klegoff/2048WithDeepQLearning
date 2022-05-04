@@ -77,13 +77,13 @@ if __name__=="__main__":
 	# hyperparameters
 	epsilon, gamma = 0.4, 0.95 # epsilon = ration exploration / exploitation, gamma = relative importance of future reward
 	sampleSize = 500
-	memorySize = 2000
+	memorySize = 10000
 	epoch = 100
 
 	# instantiate objects
 	policy_model = policyNetworkClass()
 	optimizer = optim.RMSprop(policy_model.parameters())
-	agent = agentClass(epsilon, gamma)
+	agent = agentClass(epsilon)
 	criterion = nn.MSELoss()
 
 	# some object for post-training analysis

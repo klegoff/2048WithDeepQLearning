@@ -17,9 +17,9 @@ class policyNetworkClass(nn.Module):
 	"""
 	def __init__(self):
 		super().__init__()
-		self.dense1 = nn.Linear(16, 128) # 4*4 input array
-		self.dense2 = nn.Linear(128, 128)
-		self.dense3 = nn.Linear(128, 4) # 4 possible actions
+		self.dense1 = nn.Linear(16, 512) # 4*4 input array
+		self.dense2 = nn.Linear(512, 512)
+		self.dense3 = nn.Linear(512, 4) # 4 possible actions
 
 	def forward(self, x):
 		x = self.dense1(x)

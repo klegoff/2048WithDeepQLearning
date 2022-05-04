@@ -43,12 +43,11 @@ class agentClass:
 	deep q learning agent
 	contains the neural network for reward computation
 	"""
-	def __init__(self, epsilon, gamma, initial_env=None):
+	def __init__(self, epsilon, initial_env=None):
 		# possible actions
 		self.actions = ['left', 'right', 'down', 'up']
 
 		# hyperparameters
-		self.gamma = gamma
 		self.epsilon = epsilon
 
 		# generate env if None as input
