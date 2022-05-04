@@ -76,9 +76,9 @@ def computeLoss(memory, sampleSize, policy_model, criterion, gamma):
 if __name__=="__main__":
 	# hyperparameters
 	epsilon, gamma = 0.4, 0.95 # epsilon = ration exploration / exploitation, gamma = relative importance of future reward
-	sampleSize = 2000
-	memorySize = 5000
-	epoch = 50
+	sampleSize = 500
+	memorySize = 2000
+	epoch = 2
 
 	# instantiate objects
 	policy_model = policyNetworkClass()
@@ -87,7 +87,7 @@ if __name__=="__main__":
 	criterion = nn.MSELoss()
 
 	for e in range(epoch):
-		print("epoch",e)
+		
 
 		# instantiate memory replay object
 		memory = replayMemory(memorySize)
@@ -97,9 +97,13 @@ if __name__=="__main__":
 
 		# from a sample of experiences, we compute the error
 		loss = computeLoss(memory, sampleSize, policy_model,criterion, gamma)
-		print("Loss=",loss.detach().numpy())
+		print("epoch",e,"Loss=",loss.detach().numpy())
 
 		# propagate error & update weights
 		optimizer.zero_grad()
 		loss.backward()
 		optimizer.step()
+
+		# save model state
+		modelPath = "model/modelWeights" + str(e) + ".torch"
+		torch.save(policy_model.state_dict(), modelPath)
