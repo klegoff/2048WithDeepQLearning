@@ -33,10 +33,9 @@ def fillExperienceMemory(agent, memory, policy_model):
 		# fill memory from agent experience
 		memory.push(state, action, new_state, reward)
 
-def getError(memory, sampleSize, policy_model, gamma):
+def computeLoss(memory, sampleSize, policy_model, criterion, gamma):
 	"""
-	memory sample -> data format -> error value
-	& format to pass as model input
+	memory sample -> data format -> loss values
 	"""
 	actions = ["down", "left", "right", "up"]
 	memorySize = memory.capacity
@@ -66,19 +65,26 @@ def getError(memory, sampleSize, policy_model, gamma):
 	# error = Q(s, a) - ( R(s,a) + gamma * max(Q(s',a)) )
 	error = torch.zeros((sampleSize, len(actions)))
 	error[actionCoordinate] = policy_model.forward(stateTensor)[actionCoordinate] - rewardTensor + gamma * policy_model.forward(newStateTensor).max(dim=1).values
-	return -error
+	
+	# loss :
+	target = torch.zeros((sampleSize, len(actions)))
+	#print(error.shape, target.shape)
+	loss = criterion(error, target)
+
+	return loss
 
 if __name__=="__main__":
 	# hyperparameters
-	epsilon, gamma = 0.4, 0.9 # epsilon = ration exploration / exploitation, gamma = relative importance of future reward
-	samplesize = 300
-	memorySize = 3000
-	epoch = 20
+	epsilon, gamma = 0.4, 0.95 # epsilon = ration exploration / exploitation, gamma = relative importance of future reward
+	sampleSize = 2000
+	memorySize = 5000
+	epoch = 50
 
 	# instantiate objects
 	policy_model = policyNetworkClass()
 	optimizer = optim.RMSprop(policy_model.parameters())
 	agent = agentClass(epsilon, gamma)
+	criterion = nn.MSELoss()
 
 	for e in range(epoch):
 		print("epoch",e)
@@ -90,9 +96,8 @@ if __name__=="__main__":
 		fillExperienceMemory(agent, memory, policy_model)
 
 		# from a sample of experiences, we compute the error
-		error = getError(memory, samplesize, policy_model, gamma)
-		loss = error.sum() # sum of errors, on batch
-		print(loss)
+		loss = computeLoss(memory, sampleSize, policy_model,criterion, gamma)
+		print("Loss=",loss.detach().numpy())
 
 		# propagate error & update weights
 		optimizer.zero_grad()
