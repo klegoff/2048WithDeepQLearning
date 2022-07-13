@@ -3,6 +3,9 @@
 main script :
 learn optimal policy model
 """
+import os
+import uuid
+import json
 import pickle
 import torch.optim as optim
 
@@ -74,32 +77,38 @@ def computeLoss(memory, sampleSize, policy_model, criterion, gamma):
 	return loss
 
 if __name__=="__main__":
+    
+    # id for the current run, unique
+	run_id = str(uuid.uuid1())
+    
 	# hyperparameters
-	epsilon, gamma = 0.4, 0.95 # epsilon = ration exploration / exploitation, gamma = relative importance of future reward
-	sampleSize = 500
-	memorySize = 10000
-	epoch = 100
-
+	hyparameters = {"epsilon" : 0.1, #ratio exploration / exploitation
+                    "gamma": 0.95, # relative importance of future reward
+                    "memorySize" : 10000, # size of replay memory
+                    "sampleSize" : 500, # number of experience we learn on, randomly sampled on replay memory
+                    "epoch" : 50}
+    
+    
 	# instantiate objects
 	policy_model = policyNetworkClass()
 	optimizer = optim.RMSprop(policy_model.parameters())
-	agent = agentClass(epsilon)
+	agent = agentClass(hyparameters["epsilon"])
 	criterion = nn.MSELoss()
 
 	# some object for post-training analysis
 	lossDict = {}
 	modelWeightsDict = {}
 
-	for e in range(epoch):
+	for e in range(hyparameters["epoch"]):
 
 		# instantiate memory replay object
-		memory = replayMemory(memorySize)
+		memory = replayMemory(hyparameters["memorySize"])
 		
 		# fill memory with agent experiences
 		fillExperienceMemory(agent, memory, policy_model)
 
 		# from a sample of experiences, we compute the error
-		loss = computeLoss(memory, sampleSize, policy_model,criterion, gamma)
+		loss = computeLoss(memory, hyparameters["sampleSize"], policy_model,criterion, hyparameters["gamma"])
 		lossDict[e] = loss.detach().numpy()[()]
 		print("epoch",e,"Loss=",lossDict[e])
 
@@ -111,9 +120,23 @@ if __name__=="__main__":
 		# add new model_state to dict
 		modelWeightsDict[e] = policy_model.state_dict()
 
-	# save model state and training loss
-	modelPath = "model/"
+	# save model state, training loss & hyperparameters
+	modelPath = "model/" + run_id + "/"
+	try :
+		os.mkdir(modelPath) # create directory if needed
+	except:
+		pass
+    
 	with open(modelPath + "modelWeightsDict.pickle", "wb") as f:
 		pickle.dump(modelWeightsDict, f)
+        
 	with open(modelPath + "/lossDict.pickle", "wb") as f:
 		pickle.dump(lossDict, f)
+        
+	with open(modelPath + "/hyperparameters.json", "w") as f:
+		json.dump(hyparameters, f)
+    
+        
+        
+
+    
