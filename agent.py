@@ -41,23 +41,21 @@ def computeReward(old_grid, new_grid):
 class agentClass:
 	"""
 	deep q learning agent
-	contains the neural network for reward computation
+	-stores game environment, including game state
+	-store epsilon (ratio exploration / exploitation)
 	"""
 	def __init__(self, epsilon, initial_env=None):
+        
+		self.epsilon = epsilon
+
 		# possible actions
 		self.actions = ['left', 'right', 'down', 'up']
 
-		# hyperparameters
-		self.epsilon = epsilon
-
-		# generate env if None as input
+		# generate new env if None as input
 		if type(initial_env) == type(None):
 			self.env = gameEnvironmentClass()
 		else:
 			self.env = deepcopy(initial_env)
-
-		# store initial state
-		self.state = deepcopy(self.env.grid)
 
 
 	def interact(self, action):
@@ -74,7 +72,7 @@ class agentClass:
 	def choose_action(self, policy_model):
 		"""
 		choose the action
-		randomly or the one the maximise q
+		randomly or the one that maximises Q value (epsilon greedy)
 		"""
 		if random.random() < self.epsilon:
 			# random action (exploration)
