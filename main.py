@@ -13,30 +13,32 @@ from game import *
 from neuralNetwork import *
 from agent import *
 
-def fillExperienceMemory(agent, memory, policy_model):
+def fillExperienceMemory(agent, memory, state_action_value_model):
 	"""
 	agent play some moves, and fill the transition memory up to full capacity
 	:inputs:
 		agent (type = agentClass)
 		memory (type = replayMemory)
-		policy_model (policyNetworkClass)
+		state_action_value_model (class = DQN)
 	"""
 	while len(memory) < memory.capacity: 
 		# if game is finished, we reset the grid
 		if gridIsFinished(agent.env.grid):
-			agent.resetGameEnv() 
+			agent.resetGameEnv()
 
 		# agent choose action, and interct with environment
 		state = agent.env.grid
 		with torch.no_grad():
-			action = agent.choose_action(policy_model)
+			action = agent.choose_action(state_action_value_model)
 		new_state = agent.env.grid
-		reward = reward1(state, new_state)
+
+		# compute reward
+		reward = reward2(state, new_state)
 
 		# fill memory from agent experience
 		memory.push(state, action, new_state, reward)
 
-def computeLoss(memory, sampleSize, policy_model, criterion, gamma):
+def computeLoss(memory, sampleSize, state_action_value_model, criterion, gamma):
 	"""
 	memory sample -> data format -> loss values
 	"""
@@ -67,7 +69,7 @@ def computeLoss(memory, sampleSize, policy_model, criterion, gamma):
 	# error for actions that are not used in the experience, is set to 0
 	# error = Q(s, a) - ( R(s,a) + gamma * max(Q(s',a)) )
 	error = torch.zeros((sampleSize, len(actions)))
-	error[actionCoordinate] = policy_model.forward(stateTensor)[actionCoordinate] - rewardTensor + gamma * policy_model.forward(newStateTensor).max(dim=1).values
+	error[actionCoordinate] = state_action_value_model.forward(stateTensor)[actionCoordinate] - rewardTensor + gamma * state_action_value_model.forward(newStateTensor).max(dim=1).values
 	
 	# loss :
 	target = torch.zeros((sampleSize, len(actions)))
@@ -76,6 +78,7 @@ def computeLoss(memory, sampleSize, policy_model, criterion, gamma):
 
 	return loss
 
+
 if __name__=="__main__":
     
     # id for the current run, unique
@@ -83,15 +86,15 @@ if __name__=="__main__":
     
 	# hyperparameters
 	hyparameters = {"epsilon" : 0.1, #ratio exploration / exploitation
-                    "gamma": 0.95, # relative importance of future reward
+                    "gamma": 1, # relative importance of future reward
                     "memorySize" : 10000, # size of replay memory
                     "sampleSize" : 500, # number of experience we learn on, randomly sampled on replay memory
                     "epoch" : 50}
     
     
 	### instantiate objects
-	policy_model = policyNetworkClass()
-	optimizer = optim.RMSprop(policy_model.parameters())
+	state_action_value_model = DQN()
+	optimizer = optim.RMSprop(state_action_value_model.parameters())
 	agent = agentClass(hyparameters["epsilon"])
 	criterion = nn.MSELoss()
 
@@ -105,10 +108,10 @@ if __name__=="__main__":
 		memory = replayMemory(hyparameters["memorySize"])
 		
 		# fill memory with agent experiences
-		fillExperienceMemory(agent, memory, policy_model)
+		fillExperienceMemory(agent, memory, state_action_value_model)
 
 		# from a sample of experiences, we compute the error
-		loss = computeLoss(memory, hyparameters["sampleSize"], policy_model,criterion, hyparameters["gamma"])
+		loss = computeLoss(memory, hyparameters["sampleSize"], state_action_value_model,criterion, hyparameters["gamma"])
 		lossDict[e] = loss.detach().numpy()[()]
 		print("epoch",e,"Loss=",lossDict[e])
 
@@ -118,7 +121,7 @@ if __name__=="__main__":
 		optimizer.step()
 
 		# add new model_state to dict
-		modelWeightsDict[e] = policy_model.state_dict()
+		modelWeightsDict[e] = state_action_value_model.state_dict()
 
 	# save model state, training loss & hyperparameters
 	modelPath = "model/" + run_id + "/"

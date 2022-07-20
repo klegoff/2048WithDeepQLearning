@@ -10,10 +10,10 @@ from collections import deque, namedtuple
 import torch
 import torch.nn as nn
 
-class policyNetworkClass(nn.Module):
+class DQN(nn.Module):
 	"""
 	neural network class for deep q-learning
-	Estimate Q value, from game state (torch.Tensor, of shape (batch_size, feature_size))
+	Estimate Q value for the possible actions, from game state (torch.Tensor, of shape (batch_size, feature_size))
 	"""
 	def __init__(self):
 		super().__init__()
@@ -34,7 +34,6 @@ def processGrid(grid):
 	stateArray = np.stack(grid).reshape(1, -1)
 	stateTensor =  torch.tensor(stateArray).float()
 	return stateTensor
-	#return torch.tensor(grid).float().reshape(1,-1)
 
 #######################
 #
