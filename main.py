@@ -30,8 +30,8 @@ def fillExperienceMemory(agent, memory, policy_model):
 		state = agent.env.grid
 		with torch.no_grad():
 			action = agent.choose_action(policy_model)
-		reward = agent.interact(action)
 		new_state = agent.env.grid
+		reward = reward1(state, new_state)
 
 		# fill memory from agent experience
 		memory.push(state, action, new_state, reward)
@@ -89,7 +89,7 @@ if __name__=="__main__":
                     "epoch" : 50}
     
     
-	# instantiate objects
+	### instantiate objects
 	policy_model = policyNetworkClass()
 	optimizer = optim.RMSprop(policy_model.parameters())
 	agent = agentClass(hyparameters["epsilon"])
