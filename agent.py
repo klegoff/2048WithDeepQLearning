@@ -38,7 +38,7 @@ class agentClass:
 		self.env.step(action)
 		new_grid = self.env.grid
 
-	def choose_action(self, policy_model):
+	def choose_action(self, state_action_value_model):
 		"""
 		choose the action
 		randomly or the one that maximises Q value (epsilon greedy)
@@ -51,7 +51,7 @@ class agentClass:
 			# get action with highest q value
 			grid = self.env.grid 
 			tensor = processGrid(grid)
-			output_tensor = policy_model.forward(tensor)
+			output_tensor = state_action_value_model.forward(tensor)
 			return self.actions[np.argmax(output_tensor.detach().numpy())] 
 
 	def resetGameEnv(self):

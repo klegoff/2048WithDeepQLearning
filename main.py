@@ -79,18 +79,13 @@ def computeLoss(memory, sampleSize, state_action_value_model, criterion, gamma):
 	return loss
 
 
-if __name__=="__main__":
-    
-    # id for the current run, unique
-	run_id = str(uuid.uuid1())
-    
-	# hyperparameters
-	hyparameters = {"epsilon" : 0.1, #ratio exploration / exploitation
-                    "gamma": 1, # relative importance of future reward
-                    "memorySize" : 10000, # size of replay memory
-                    "sampleSize" : 500, # number of experience we learn on, randomly sampled on replay memory
-                    "epoch" : 50}
-    
+def runExperiment(hyparameters):
+	"""
+	run training of model, according to the input hyperparameters
+	save results in model/run_id/
+	"""
+	# id for the current run, unique
+	run_id = str(uuid.uuid1())    
     
 	### instantiate objects
 	state_action_value_model = DQN()
@@ -138,8 +133,16 @@ if __name__=="__main__":
         
 	with open(modelPath + "/hyperparameters.json", "w") as f:
 		json.dump(hyparameters, f)
-    
-        
-        
 
+if __name__=="__main__":
     
+	# hyperparameters
+	hyparameters = {"epsilon" : 0.1, #ratio exploration / exploitation
+					"gamma": 1, # relative importance of future reward
+					"memorySize" : 10000, # size of replay memory
+					"sampleSize" : 500, # number of experience we learn on, randomly sampled on replay memory
+					"epoch" : 50}
+
+	runExperiment(hyparameters)
+
+
