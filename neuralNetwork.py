@@ -19,12 +19,14 @@ class DQN(nn.Module):
 		super().__init__()
 		self.dense1 = nn.Linear(16, 512) # 4*4 input array
 		self.dense2 = nn.Linear(512, 512)
-		self.dense3 = nn.Linear(512, 4) # 4 possible actions
+		self.dense3 = nn.Linear(512, 512)
+		self.dense4 = nn.Linear(512, 4) # 4 possible actions
 
 	def forward(self, x):
 		x = self.dense1(x)
 		x = self.dense2(x)
 		x = self.dense3(x)
+		x = self.dense4(x)
 		return x
 
 def processGrid(grid):
