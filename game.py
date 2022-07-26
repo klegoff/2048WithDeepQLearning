@@ -165,4 +165,4 @@ class gameEnvironmentClass:
 		self.grid = new_grid
 
 		# check if grid is finished
-		self.finished = gridIsFinished(grid)
+		self.finished = gridIsFinished(self.grid)

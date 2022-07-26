@@ -10,6 +10,8 @@ from collections import deque, namedtuple
 import torch
 import torch.nn as nn
 
+from game import gridIsFinished, reward2
+
 class DQN(nn.Module):
 	"""
 	neural network class for deep q-learning
@@ -68,6 +70,35 @@ class replayMemory(object):
 
 	def reset(self):
 		self.memory = deque([],maxlen=capacity)
+
+
+	def fill(self, agent, state_action_value_model):
+		"""
+		agent play some moves, and fill the transition memory up to full capacity
+		:inputs:
+			agent (type = agentClass)
+			memory (type = replayMemory)
+			state_action_value_model (class = DQN)
+		"""
+		while len(self.memory) < self.capacity: 
+			# if game is finished, we reset the grid
+			if gridIsFinished(agent.env.grid):
+				agent.resetGameEnv()
+
+			# choose action (epsilon greedy)
+			with torch.no_grad():
+				action = agent.choose_action(state_action_value_model)
+
+			# execute action
+			old_state = agent.env.grid
+			agent.interact(action)
+			new_state = agent.env.grid
+
+			# compute reward
+			reward = reward2(old_state, new_state)
+
+			# fill memory from agent experience
+			self.push(old_state, action, new_state, reward)
 
 
 

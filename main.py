@@ -18,31 +18,6 @@ from agent import *
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(device)
 
-def fillExperienceMemory(agent, memory, state_action_value_model):
-	"""
-	agent play some moves, and fill the transition memory up to full capacity
-	:inputs:
-		agent (type = agentClass)
-		memory (type = replayMemory)
-		state_action_value_model (class = DQN)
-	"""
-	while len(memory) < memory.capacity: 
-		# if game is finished, we reset the grid
-		if gridIsFinished(agent.env.grid):
-			agent.resetGameEnv()
-
-		# agent choose action (epsilon greedy), and interact with environment
-		state = agent.env.grid
-		with torch.no_grad():
-			action = agent.choose_action(state_action_value_model)
-		new_state = agent.env.grid
-
-		# compute reward
-		reward = reward2(state, new_state)
-
-		# fill memory from agent experience
-		memory.push(state, action, new_state, reward)
-
 def computeLoss(memory, sampleSize, state_action_value_model, criterion, gamma):
 	"""
 	memory sample -> data format -> loss values
@@ -108,7 +83,7 @@ def runExperiment(hyparameters):
 		memory = replayMemory(hyparameters["memorySize"])
 		
 		# fill memory with agent experiences
-		fillExperienceMemory(agent, memory, state_action_value_model)
+		memory.fill(agent, state_action_value_model)
 
 		# from a sample of experiences, we compute the error
 		loss = computeLoss(memory, hyparameters["sampleSize"], state_action_value_model,criterion, hyparameters["gamma"])

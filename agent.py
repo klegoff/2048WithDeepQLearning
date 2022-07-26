@@ -34,9 +34,7 @@ class agentClass:
 		"""
 		execute action in the environment, update the state
 		"""
-		old_grid = self.env.grid
 		self.env.step(action)
-		new_grid = self.env.grid
 
 	def choose_action(self, state_action_value_model):
 		"""
@@ -51,7 +49,7 @@ class agentClass:
 			# get action with highest q value
 			grid = self.env.grid 
 			tensor = processGrid(grid)
-			output_tensor = state_action_value_model.to("cpu").forward(tensor) # 
+			output_tensor = state_action_value_model.to("cpu").forward(tensor)
 			return self.actions[np.argmax(output_tensor.detach().numpy())] 
 
 	def resetGameEnv(self):
