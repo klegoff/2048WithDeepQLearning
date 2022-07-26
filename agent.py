@@ -5,10 +5,10 @@ Contains RL agent class and NN
 import random
 from copy import deepcopy
 import numpy as np
+import torch
 
 from game import gameEnvironmentClass
 from neuralNetwork import processGrid
-
 
 class agentClass:
 	"""
@@ -51,7 +51,7 @@ class agentClass:
 			# get action with highest q value
 			grid = self.env.grid 
 			tensor = processGrid(grid)
-			output_tensor = state_action_value_model.forward(tensor)
+			output_tensor = state_action_value_model.to("cpu").forward(tensor) # 
 			return self.actions[np.argmax(output_tensor.detach().numpy())] 
 
 	def resetGameEnv(self):

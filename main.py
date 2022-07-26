@@ -7,11 +7,16 @@ import os
 import uuid
 import json
 import pickle
+import torch
 import torch.optim as optim
 
 from game import *
 from neuralNetwork import *
 from agent import *
+
+# check if cuda device is available
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+print(device)
 
 def fillExperienceMemory(agent, memory, state_action_value_model):
 	"""
@@ -26,7 +31,7 @@ def fillExperienceMemory(agent, memory, state_action_value_model):
 		if gridIsFinished(agent.env.grid):
 			agent.resetGameEnv()
 
-		# agent choose action, and interct with environment
+		# agent choose action (epsilon greedy), and interact with environment
 		state = agent.env.grid
 		with torch.no_grad():
 			action = agent.choose_action(state_action_value_model)
@@ -85,10 +90,10 @@ def runExperiment(hyparameters):
 	save results in model/run_id/
 	"""
 	# id for the current run, unique
-	run_id = str(uuid.uuid1())    
-    
+	run_id = str(uuid.uuid1())
+
 	### instantiate objects
-	state_action_value_model = DQN()
+	state_action_value_model = DQN().to(device)
 	optimizer = optim.RMSprop(state_action_value_model.parameters())
 	agent = agentClass(hyparameters["epsilon"])
 	criterion = nn.MSELoss()
@@ -108,6 +113,7 @@ def runExperiment(hyparameters):
 		# from a sample of experiences, we compute the error
 		loss = computeLoss(memory, hyparameters["sampleSize"], state_action_value_model,criterion, hyparameters["gamma"])
 		lossDict[e] = loss.detach().numpy()[()]
+		loss = loss.to(device)
 		print("epoch",e,"Loss=",lossDict[e])
 
 		# propagate error & update weights
@@ -141,7 +147,7 @@ if __name__=="__main__":
 					"gamma": 1, # relative importance of future reward
 					"memorySize" : 10000, # size of replay memory
 					"sampleSize" : 500, # number of experience we learn on, randomly sampled on replay memory
-					"epoch" : 50}
+					"epoch" : 100}
 
 	runExperiment(hyparameters)
 
