@@ -101,5 +101,30 @@ class replayMemory(object):
 			self.push(old_state, action, new_state, reward)
 
 
+	def sampleAndFormat(self, sampleSize):
+		"""
+		sample from replayMemory, and format for NN
+		"""
+		actions = ["down", "left", "right", "up"]
 
+		# retrive states
+		transitions = self.sample(sampleSize)
+		batch = Transition(*zip(*transitions))
 
+		# coordinates of experienced (state, action)
+		actionList = batch.action
+		func = lambda x: actions.index(x)
+		actionList = list(map(func, actionList))
+		actionCoordinate = tuple(range(sampleSize)), tuple(actionList) # index of the value for Q(s,a)
+
+		# format
+		stateArray = np.stack(batch.state).reshape(sampleSize, -1)
+		newStateArray = np.stack(batch.new_state).reshape(sampleSize, -1)
+		rewardArray = np.stack(batch.reward)
+
+		# cast to torch type
+		stateTensor =  torch.tensor(stateArray).float()
+		newStateTensor = torch.tensor(newStateArray).float()
+		rewardTensor = torch.tensor(rewardArray).float()
+
+		return stateTensor, newStateTensor, rewardTensor, actionCoordinate

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Contains RL agent class and NN
+Contains RL agent class
 """
 import random
 from copy import deepcopy
