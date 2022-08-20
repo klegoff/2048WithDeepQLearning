@@ -69,7 +69,7 @@ class replayMemory(object):
 		return len(self.memory)
 
 	def reset(self):
-		self.memory = deque([],maxlen=capacity)
+		self.memory = deque([],maxlen=self.capacity)
 
 
 	def fill(self, agent, state_action_value_model, reward_function):

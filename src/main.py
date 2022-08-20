@@ -16,9 +16,10 @@ from game import *
 from neuralNetwork import *
 from reward import *
 
+CUDA = False # if you want to train on GPU
+
 # check if cuda device is available
-device = "cpu" #torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-print(device)
+device = torch.device("cuda:0" if (torch.cuda.is_available() and CUDA) else "cpu")
 
 # all possible actions and reward functions
 actions = ["down", "left", "right", "up"]
@@ -42,6 +43,8 @@ def runExperiment(hyparameters):
 	# some object for post-training analysis
 	lossDict = {}
 	modelWeightsDict = {}
+
+	print("Training", run_id, "on", device)
 
 	for e in range(hyparameters["epoch"]):
 
@@ -67,7 +70,7 @@ def runExperiment(hyparameters):
 		loss = criterion(error, target)
 		lossDict[e] = loss.detach().numpy()[()] # store loss
 		loss = loss.to(device)
-		print("epoch",e,"Loss=",lossDict[e])
+		print("epoch",e,"Loss =",lossDict[e])
 
 		# propagate error & update weights
 		optimizer.zero_grad()
@@ -78,7 +81,7 @@ def runExperiment(hyparameters):
 		modelWeightsDict[e] = state_action_value_model.state_dict()
 
 	# save model state, training loss & hyperparameters
-	modelPath = "model/" + run_id + "/"
+	modelPath = "../model/" + run_id + "/"
 	try :
 		os.mkdir(modelPath) # create directory if needed
 	except:
