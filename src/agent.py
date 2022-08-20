@@ -9,8 +9,6 @@ import numpy as np
 import torch
 
 from game import gameEnvironmentClass
-from neuralNetwork import processGrid
-
 
 class agentClass:
 	"""
@@ -50,7 +48,8 @@ class agentClass:
 		else:
 			# get action with highest q value
 			grid = self.env.grid 
-			tensor = processGrid(grid)
+			stateArray = np.stack(grid).reshape(1, -1)
+			tensor =  torch.tensor(stateArray).float()
 			output_tensor = state_action_value_model.to("cpu").forward(tensor)
 			return self.actions[np.argmax(output_tensor.detach().numpy())] 
 

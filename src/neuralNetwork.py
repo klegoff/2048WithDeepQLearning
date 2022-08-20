@@ -25,19 +25,11 @@ class DQN(nn.Module):
 		self.dense4 = nn.Linear(512, 4) # 4 possible actions
 
 	def forward(self, x):
-		x = self.dense1(x)
+		x = self.dense1(x.reshape(-1,16)) # format to be treated as linear input
 		x = self.dense2(x)
 		x = self.dense3(x)
 		x = self.dense4(x)
 		return x
-
-def processGrid(grid):
-	"""
-	format grid, as input of DQN
-	"""
-	stateArray = np.stack(grid).reshape(1, -1)
-	stateTensor =  torch.tensor(stateArray).float()
-	return stateTensor
 
 #######################
 #
@@ -61,9 +53,6 @@ class replayMemory(object):
 	def push(self, *args):
 		"""Save a transition"""
 		self.memory.append(Transition(*args))
-
-	def sample(self, batch_size):
-		return random.sample(self.memory, batch_size)
 
 	def __len__(self):
 		return len(self.memory)
@@ -102,14 +91,14 @@ class replayMemory(object):
 			self.push(old_state, action, new_state, reward)
 
 
-	def sampleAndFormat(self, sampleSize):
+	def sample(self, sampleSize):
 		"""
 		sample from replayMemory, and format for NN
 		"""
 		actions = ["down", "left", "right", "up"]
 
 		# retrive states
-		transitions = self.sample(sampleSize)
+		transitions = random.sample(self.memory, sampleSize)
 		batch = Transition(*zip(*transitions))
 
 		# coordinates of experienced (state, action)
@@ -119,8 +108,8 @@ class replayMemory(object):
 		actionCoordinate = tuple(range(sampleSize)), tuple(actionList) # index of the value for Q(s,a)
 
 		# format
-		stateArray = np.stack(batch.state).reshape(sampleSize, -1)
-		newStateArray = np.stack(batch.new_state).reshape(sampleSize, -1)
+		stateArray = np.stack(batch.state)#.reshape(sampleSize, -1)
+		newStateArray = np.stack(batch.new_state)#.reshape(sampleSize, -1)
 		rewardArray = np.stack(batch.reward)
 
 		# cast to torch type

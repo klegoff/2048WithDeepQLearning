@@ -37,7 +37,7 @@ def runExperiment(hyparameters):
 	state_action_value_model = DQN().to(device)
 	optimizer = optim.RMSprop(state_action_value_model.parameters())
 	agent = agentClass(hyparameters["epsilon"])
-	criterion = nn.MSELoss()
+	criterion = torch.nn.MSELoss()
 	reward_func = reward_functions[hyparameters["reward_function"]]
 
 	# some object for post-training analysis
@@ -57,7 +57,7 @@ def runExperiment(hyparameters):
 		memory.fill(agent, state_action_value_model, reward_func)
 		
 		# retrive a sample of replayMemory
-		stateTensor, newStateTensor, rewardTensor, actionCoordinate = memory.sampleAndFormat(hyparameters["sampleSize"])
+		stateTensor, newStateTensor, rewardTensor, actionCoordinate = memory.sample(hyparameters["sampleSize"])
 
 		### from a sample of experiences, we compute the error, and backpropagate
 
