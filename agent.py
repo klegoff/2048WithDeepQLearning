@@ -4,11 +4,13 @@ Contains RL agent class
 """
 import random
 from copy import deepcopy
+
 import numpy as np
 import torch
 
 from game import gameEnvironmentClass
 from neuralNetwork import processGrid
+
 
 class agentClass:
 	"""

@@ -4,13 +4,13 @@ Contains deep q-learning network class
 and related functions
 """
 import random
-import numpy as np
 from collections import deque, namedtuple
 
+import numpy as np
 import torch
 import torch.nn as nn
 
-from game import gridIsFinished, reward2
+from game import gridIsFinished
 
 class DQN(nn.Module):
 	"""
@@ -72,13 +72,14 @@ class replayMemory(object):
 		self.memory = deque([],maxlen=capacity)
 
 
-	def fill(self, agent, state_action_value_model):
+	def fill(self, agent, state_action_value_model, reward_function):
 		"""
 		agent play some moves, and fill the transition memory up to full capacity
 		:inputs:
 			agent (type = agentClass)
 			memory (type = replayMemory)
 			state_action_value_model (class = DQN)
+			reward_function (function of reward)
 		"""
 		while len(self.memory) < self.capacity: 
 			# if game is finished, we reset the grid
@@ -95,7 +96,7 @@ class replayMemory(object):
 			new_state = agent.env.grid
 
 			# compute reward
-			reward = reward2(old_state, new_state)
+			reward = reward_function(old_state, new_state)
 
 			# fill memory from agent experience
 			self.push(old_state, action, new_state, reward)

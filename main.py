@@ -3,23 +3,26 @@
 main script :
 learn optimal policy model
 """
-import os
-import uuid
 import json
+import os
 import pickle
+import uuid
+
 import torch
 import torch.optim as optim
 
+from agent import *
 from game import *
 from neuralNetwork import *
-from agent import *
+from reward import *
 
 # check if cuda device is available
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+device = "cpu" #torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(device)
 
+# all possible actions and reward functions
 actions = ["down", "left", "right", "up"]
-
+reward_functions = {"reward1":reward1,"reward2":reward2,"reward3":reward3}
 
 def runExperiment(hyparameters):
 	"""
@@ -34,6 +37,7 @@ def runExperiment(hyparameters):
 	optimizer = optim.RMSprop(state_action_value_model.parameters())
 	agent = agentClass(hyparameters["epsilon"])
 	criterion = nn.MSELoss()
+	reward_func = reward_functions[hyparameters["reward_function"]]
 
 	# some object for post-training analysis
 	lossDict = {}
@@ -47,7 +51,7 @@ def runExperiment(hyparameters):
 		memory = replayMemory(hyparameters["memorySize"])
 		
 		# fill memory with agent experiences
-		memory.fill(agent, state_action_value_model)
+		memory.fill(agent, state_action_value_model, reward_func)
 		
 		# retrive a sample of replayMemory
 		stateTensor, newStateTensor, rewardTensor, actionCoordinate = memory.sampleAndFormat(hyparameters["sampleSize"])
@@ -96,6 +100,7 @@ if __name__=="__main__":
 					"gamma": 1, # relative importance of future reward
 					"memorySize" : 15000, # size of replay memory
 					"sampleSize" : 1000, # number of experience we learn on, randomly sampled on replay memory
+					"reward_function" : "reward2", # name of the reward function used
 					"epoch" : 100}
 
 	runExperiment(hyparameters)
