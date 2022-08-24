@@ -9,13 +9,13 @@ from collections import deque, namedtuple
 import numpy as np
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 from game import gridIsFinished
 
-class DQN(nn.Module):
+class DNN(nn.Module):
 	"""
-	neural network class for deep q-learning
-	Estimate Q value for the possible actions, from game state (torch.Tensor, of shape (batch_size, feature_size))
+	implementation of dense NN
 	"""
 	def __init__(self):
 		super().__init__()
@@ -25,11 +25,55 @@ class DQN(nn.Module):
 		self.dense4 = nn.Linear(512, 4) # 4 possible actions
 
 	def forward(self, x):
-		x = self.dense1(x.reshape(-1,16)) # format to be treated as linear input
-		x = self.dense2(x)
-		x = self.dense3(x)
-		x = self.dense4(x)
+		# formatting to be treated as 1D input
+		x = x.reshape(-1,16)
+
+		# forward
+		x = F.relu(self.dense1(x)) 
+		x = F.relu(self.dense2(x))
+		x = F.relu(self.dense3(x))
+		x = F.relu(self.dense4(x))
 		return x
+
+class CNN(nn.Module):
+	"""
+	implementation of convolutionnal NN
+	"""
+	def __init__(self):
+		super().__init__()
+		self.l1 = nn.Conv2d(2, 10, (1,2), padding="same")
+		self.l2 = nn.Conv2d(10, 20, (1,3), padding="same")
+		self.dense = nn.Linear(320,4) # output layer
+		self.flat = nn.Flatten()
+
+	def forward(self, x):
+		# formatting
+		x = x.unsqueeze(1)
+		x_transposed = torch.transpose(x, 2, 3) #transpose grid so we can apply same convolution filters
+		X = torch.cat((x, x_transposed), dim=1)# concat both as different channels
+
+		# forward through 2D convolutionnal layers
+		X = F.relu(self.l1.forward(X))
+		X = F.relu(self.l2.forward(X))
+		X = self.flat(X)
+		return self.dense(X)
+
+
+def DQN(nn_type="cnn"):
+	"""
+	return neural network object for deep q-learning
+	Estimate Q value for the possible actions, from game state (torch.Tensor, of shape (batch_size, 4, 4))
+	"""
+
+	if nn_type=="cnn":
+		return CNN()
+
+	elif nn_type=="dnn":
+		return DNN()
+	
+	else :
+		print("Unknown model")
+		return None
 
 #######################
 #

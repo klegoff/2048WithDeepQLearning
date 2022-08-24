@@ -34,7 +34,7 @@ def runExperiment(hyparameters):
 	run_id = str(uuid.uuid1())
 
 	### instantiate objects
-	state_action_value_model = DQN().to(device)
+	state_action_value_model = DQN(hyparameters["nn_model"]).to(device)
 	optimizer = optim.RMSprop(state_action_value_model.parameters())
 	agent = agentClass(hyparameters["epsilon"])
 	criterion = torch.nn.MSELoss()
@@ -44,7 +44,7 @@ def runExperiment(hyparameters):
 	lossDict = {}
 	modelWeightsDict = {}
 
-	print("Training", run_id, "on", device)
+	print("Training", run_id, "on", device, "\nWith parameters :", hyparameters)
 
 	for e in range(hyparameters["epoch"]):
 
@@ -101,9 +101,10 @@ if __name__=="__main__":
 	# hyperparameters
 	hyparameters = {"epsilon" : 0.1, #ratio exploration / exploitation
 					"gamma": 1, # relative importance of future reward
-					"memorySize" : 15000, # size of replay memory
-					"sampleSize" : 1000, # number of experience we learn on, randomly sampled on replay memory
+					"memorySize" : 5000, # size of replay memory
+					"sampleSize" : 500, # number of experience we learn on, randomly sampled on replay memory
 					"reward_function" : "reward2", # name of the reward function used
+					"nn_model":"cnn", # model to evalutate state-action values
 					"epoch" : 100}
 
 	runExperiment(hyparameters)

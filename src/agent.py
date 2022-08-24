@@ -47,9 +47,8 @@ class agentClass:
 
 		else:
 			# get action with highest q value
-			grid = self.env.grid 
-			stateArray = np.stack(grid).reshape(1, -1)
-			tensor =  torch.tensor(stateArray).float()
+			grid = self.env.grid.reshape(1, 4, 4).copy()
+			tensor =  torch.tensor(grid).float()
 			output_tensor = state_action_value_model.to("cpu").forward(tensor)
 			return self.actions[np.argmax(output_tensor.detach().numpy())] 
 
