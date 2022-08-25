@@ -18,9 +18,6 @@ from reward import *
 
 CUDA = False # if you want to train on GPU
 
-# check if cuda device is available
-device = torch.device("cuda:0" if (torch.cuda.is_available() and CUDA) else "cpu")
-
 # all possible actions and reward functions
 actions = ["down", "left", "right", "up"]
 reward_functions = {"reward1":reward1,"reward2":reward2,"reward3":reward3}
@@ -32,6 +29,9 @@ def runExperiment(hyparameters):
 	"""
 	# id for the current run, unique
 	run_id = str(uuid.uuid1())
+
+	# check if cuda device is available
+	device = torch.device("cuda:0" if (torch.cuda.is_available() and hyperparameters["use_cuda"]) else "cpu")
 
 	### instantiate objects
 	state_action_value_model = DQN(hyparameters["nn_model"]).to(device)
@@ -105,6 +105,7 @@ if __name__=="__main__":
 					"sampleSize" : 500, # number of experience we learn on, randomly sampled on replay memory
 					"reward_function" : "reward2", # name of the reward function used
 					"nn_model":"cnn", # model to evalutate state-action values
+					"use_cuda":True, # if you want the model to run on GPU
 					"epoch" : 100}
 
 	runExperiment(hyparameters)
